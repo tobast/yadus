@@ -15,6 +15,9 @@ ALLOWED_HOSTS = []
 # The maximum number of characters of a URL to be shortened
 MAX_URL_LENGTH = 4096
 
+# The number of characters of a randomly generated slug
+SLUG_LENGTH = 8
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
