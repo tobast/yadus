@@ -11,6 +11,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Yadus
+    'shortener.apps.ShortenerConfig',
 ]
 
 MIDDLEWARE = [
