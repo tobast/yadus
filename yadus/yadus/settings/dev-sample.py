@@ -12,6 +12,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# The maximum number of characters of a URL to be shortened
+MAX_URL_LENGTH = 4096
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
