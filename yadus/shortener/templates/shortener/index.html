@@ -1,0 +1,36 @@
+{% load i18n %}
+
+<h2>{% trans "Shorten a URL" %}</h2>
+
+{% if error_text %}
+<div id="error-banner">
+  {% trans "Error: " %}{% blocktrans %} {{error_text}} {% endblocktrans %}
+</div>
+{% endif %}
+
+<form id="shorten-form" method="POST" action="{% url 'submit' %}">
+  <div class="form-group" id="group-url">
+    <label for="url">{% trans "URL to shorten" %}</label>
+    <input type="url"
+           name="url"
+           id="input-url"
+           placeholder="{% trans "URL to shorten" %}"
+           {% if created_url %}
+           value="{{ created_url }}"
+           {% endif %}
+           onfocus="this.select();"
+           required autofocus>
+  </div>
+  <div class="form-group" id="group-slug">
+    <label for="slug">{% trans "Custom shortened text" %}</label>
+    <input type="text"
+           name="slug"
+           id="input-slug"
+           placeholder="{%trans "Custom shortened text (opt.)" %}">
+  </div>
+  <input type="hidden" name="human" value="">
+  <input type="submit"
+         class="button"
+         value="{% trans "Shorten me!" %}"
+         id="input-submit">
+</form>

@@ -15,7 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+import shortener.views
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^\+admin/', admin.site.urls),
+    url(r'^$', shortener.views.index, name='index'),
+    url(r'^\+error/(?P<err>[\w]+)$', shortener.views.index, name='index-err'),
+    url(r'^\+created/(?P<created_slug>[\w-]+)$',
+        shortener.views.index, name='index-created'),
+    url(r'^\+submit$', shortener.views.submit, name='submit'),
+    url(r'^(?P<slug>[\w-]+)$', shortener.views.followSlug, name='follow'),
 ]
