@@ -1,5 +1,7 @@
+{% extends 'shortener/base.html' %}
 {% load i18n %}
 
+{% block content %}
 <h2>{% trans "Shorten a URL" %}</h2>
 
 {% if error_text %}
@@ -34,3 +36,4 @@
          value="{% trans "Shorten me!" %}"
          id="input-submit">
 </form>
+{% endblock %}

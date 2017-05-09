@@ -1,0 +1,23 @@
+{% load i18n staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="{% static 'css/yadus.css' %}" />
+  </head>
+  <body>
+    <div id="info">
+      Yadus, by <a href="https://tobast.fr/">tobast</a><br/>
+      <a href="https://github.com/tobast/yadus">View on GitHub</a> (GPLv3)
+    </div>
+
+    <a href="{% url 'index' %}">
+      <h1>Yadus</h1>
+    </a>
+
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>
