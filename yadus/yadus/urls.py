@@ -20,7 +20,7 @@ import shortener.views
 urlpatterns = [
     url(r'^\+admin/', admin.site.urls),
     url(r'^$', shortener.views.index, name='index'),
-    url(r'^\+error/(?P<err>[\w]+)$', shortener.views.index, name='index-err'),
+    url(r'^\+error/(?P<err>[\w-]+)$', shortener.views.index, name='index-err'),
     url(r'^\+created/(?P<created_slug>[\w-]+)$',
         shortener.views.index, name='index-created'),
     url(r'^\+submit$', shortener.views.submit, name='submit'),

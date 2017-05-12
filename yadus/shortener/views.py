@@ -1,12 +1,17 @@
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseBadRequest
+from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ValidationError
 from .models import ShortUrl
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def index(request, created_slug=None, err=None):
@@ -14,6 +19,8 @@ def index(request, created_slug=None, err=None):
     error_texts = {
         'inuse': 'this short text is already used :c',
         'invalid-url': 'please submit a valid URL.',
+        'invalid-slug': ('a short text can only contain letters, digits, ' +
+                         'dashes (-) and underscores (_).'),
     }
 
     if created_slug is not None:
@@ -50,10 +57,20 @@ def submit(request):
 
     try:
         dbEntry = ShortUrl.create(url=url, slug=slug)
-    except ValidationError:
-        if human:
-            return redirect('index-err', err='invalid-url')
-        return HttpResponseBadRequest('Invalid url')
+    except ValidationError as err:
+        if 'url' in dict(err):
+            if human:
+                return redirect('index-err', err='invalid-url')
+            return HttpResponseBadRequest('Invalid url')
+        elif 'slug' in dict(err):
+            if human:
+                return redirect('index-err', err='invalid-slug')
+            return HttpResponseBadRequest('Invalid slug')
+
+        # We've missed a potential validation error, log a 500 error.
+        logger.error('500 error: POST data = {} ; error = {}'.format(
+            request.POST, err))
+        return HttpResponseServerError('Bad data processing')
 
     if human:
         return redirect('index-created', created_slug=dbEntry.slug)

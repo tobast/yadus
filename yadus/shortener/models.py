@@ -10,7 +10,7 @@ import random
 
 class ShortUrl(models.Model):
     """ Shortened URL model """
-    slug = models.SlugField(allow_unicode=True)
+    slug = models.SlugField(allow_unicode=False)
     url = models.URLField(max_length=settings.MAX_URL_LENGTH)
 
     def __str__(self):
@@ -28,7 +28,8 @@ class ShortUrl(models.Model):
         def randomSlug():
             ''' Generates a random unused slug '''
             def nextRandom():
-                return ''.join(random.choices(charset, k=settings.SLUG_LENGTH))
+                return ''.join([random.choice(charset)
+                                for _ in range(settings.SLUG_LENGTH)])
             charset = string.ascii_letters + string.digits + '-_'
             out = nextRandom()
             while ShortUrl.slugExists(out):
