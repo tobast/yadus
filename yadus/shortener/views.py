@@ -14,13 +14,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def index(request, created_slug=None, err=None):
+def index(request, created_slug=None, err=None, status=200):
     ''' Index page's view '''
     error_texts = {
         'inuse': 'this short text is already used :c',
         'invalid-url': 'please submit a valid URL.',
         'invalid-slug': ('a short text can only contain letters, digits, ' +
                          'dashes (-) and underscores (_).'),
+        '404': 'sadly, this page does not exist.',
     }
 
     if created_slug is not None:
@@ -33,7 +34,7 @@ def index(request, created_slug=None, err=None):
         'error_text': error_texts.get(err),
     }
 
-    return render(request, 'shortener/index.html', context)
+    return render(request, 'shortener/index.html', context, status=status)
 
 
 @csrf_exempt
@@ -84,3 +85,8 @@ def followSlug(request, slug=None):
 
     url = get_object_or_404(ShortUrl, slug=slug)
     return redirect(url.url)
+
+
+def err404(request):
+    ''' 404 HTTP error (not found) '''
+    return index(request, err='404', status='404')

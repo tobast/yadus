@@ -26,3 +26,5 @@ urlpatterns = [
     url(r'^\+submit$', shortener.views.submit, name='submit'),
     url(r'^(?P<slug>[\w-]+)$', shortener.views.followSlug, name='follow'),
 ]
+
+handler404 = shortener.views.err404

@@ -1,0 +1,10 @@
+{% extends 'shortener/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Server error" %}</h2>
+
+<p>{% blocktrans %}
+  Something went wrong on our side :( Sorry!
+{% endblocktrans %}</p>
+{% endblock %}
