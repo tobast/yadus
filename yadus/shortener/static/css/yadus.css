@@ -1,5 +1,5 @@
 body {
-    font-family:Arial;
+    font-family:'Open Sans', Arial;
     background-color: #2a2a2a;
     color:#f4f4f4;
     font-size:16px;
@@ -13,9 +13,10 @@ body {
 h1 {
     margin-left: 0;
     margin-top: 0px;
-    margin-bottom: 20px;
-    font-size: 42pt;
+    margin-bottom: 10px;
+    font-size: 50pt;
     color: #b12533;
+    font-family: 'Baloo', cursive;
 }
 
 a {
@@ -26,6 +27,7 @@ a {
 h2 {
     margin-left: 50px;
     margin-bottom: 0.2em;
+    margin-top: 10px;
 }
 
 #shorten-form {
