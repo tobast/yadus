@@ -15,78 +15,79 @@ logger = logging.getLogger(__name__)
 
 
 def index(request, created_slug=None, err=None, status=200):
-    ''' Index page's view '''
+    """ Index page's view """
     error_texts = {
-        'inuse': 'this short text is already used :c',
-        'invalid-url': 'please submit a valid URL.',
-        'invalid-slug': ('a short text can only contain letters, digits, ' +
-                         'dashes (-) and underscores (_).'),
-        '404': 'sadly, this page does not exist.',
+        "inuse": "this short text is already used :c",
+        "invalid-url": "please submit a valid URL.",
+        "invalid-slug": (
+            "a short text can only contain letters, digits, "
+            + "dashes (-) and underscores (_)."
+        ),
+        "404": "sadly, this page does not exist.",
     }
 
     if created_slug is not None:
-        created_url = request.build_absolute_uri('/' + created_slug)
+        created_url = request.build_absolute_uri("/" + created_slug)
     else:
-        created_url = ''
+        created_url = ""
 
     context = {
-        'created_url': created_url,
-        'error_text': error_texts.get(err),
+        "created_url": created_url,
+        "error_text": error_texts.get(err),
     }
 
-    return render(request, 'shortener/index.html', context, status=status)
+    return render(request, "shortener/index.html", context, status=status)
 
 
 @csrf_exempt
 def submit(request):
-    ''' Inserts the request in database '''
-    human = request.POST.get('human') is not None
+    """ Inserts the request in database """
+    human = request.POST.get("human") is not None
 
     try:
-        url = request.POST['url']
+        url = request.POST["url"]
     except KeyError:
         if human:
-            return redirect('index')
+            return redirect("index")
         return HttpResponseBadRequest('Missing POST field: "url"')
 
-    slug = request.POST.get('slug')
+    slug = request.POST.get("slug")
 
     if slug and ShortUrl.slugExists(slug):
         if human:
-            return redirect('index-err', err='inuse')
-        return HttpResponseForbidden('Slug already in use')
+            return redirect("index-err", err="inuse")
+        return HttpResponseForbidden("Slug already in use")
 
     try:
         dbEntry = ShortUrl.create(url=url, slug=slug)
     except ValidationError as err:
-        if 'url' in dict(err):
+        if "url" in dict(err):
             if human:
-                return redirect('index-err', err='invalid-url')
-            return HttpResponseBadRequest('Invalid url')
-        elif 'slug' in dict(err):
+                return redirect("index-err", err="invalid-url")
+            return HttpResponseBadRequest("Invalid url")
+        elif "slug" in dict(err):
             if human:
-                return redirect('index-err', err='invalid-slug')
-            return HttpResponseBadRequest('Invalid slug')
+                return redirect("index-err", err="invalid-slug")
+            return HttpResponseBadRequest("Invalid slug")
 
         # We've missed a potential validation error, log a 500 error.
-        logger.error('500 error: POST data = {} ; error = {}'.format(
-            request.POST, err))
-        return HttpResponseServerError('Bad data processing')
+        logger.error("500 error: POST data = {} ; error = {}".format(request.POST, err))
+        return HttpResponseServerError("Bad data processing")
 
     if human:
-        return redirect('index-created', created_slug=dbEntry.slug)
-    return HttpResponse(request.build_absolute_uri('/' + dbEntry.slug))
+        return redirect("index-created", created_slug=dbEntry.slug)
+    return HttpResponse(request.build_absolute_uri("/" + dbEntry.slug))
 
 
 def followSlug(request, slug=None):
-    ''' Follows the given `slug` '''
+    """ Follows the given `slug` """
     if slug is None:
-        return redirect('index')
+        return redirect("index")
 
     url = get_object_or_404(ShortUrl, slug=slug)
     return redirect(url.url)
 
 
-def err404(request):
-    ''' 404 HTTP error (not found) '''
-    return index(request, err='404', status='404')
+def err404(request, exception):
+    """ 404 HTTP error (not found) """
+    return index(request, err="404", status="404")
