@@ -105,16 +105,17 @@ class ShortUrl(models.Model):
                     break
 
         # Slug pattern check
-        for re_group in self.spam_slug_re:
-            matching = True
-            for cur_re in re_group:
-                if not cur_re.fullmatch(self.slug):
-                    matching = False
+        if len(self.slug) != settings.SLUG_LENGTH:
+            for re_group in self.spam_slug_re:
+                matching = True
+                for cur_re in re_group:
+                    if not cur_re.fullmatch(self.slug):
+                        matching = False
+                        break
+                if matching:
+                    is_blocked = True
+                    is_spam = True
                     break
-            if matching:
-                is_blocked = True
-                is_spam = True
-                break
 
         changed = (self.enabled == is_blocked) or (self.is_spam != is_spam)
         self.enabled = not is_blocked
