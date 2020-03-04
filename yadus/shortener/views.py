@@ -85,6 +85,12 @@ def followSlug(request, slug=None):
         return redirect("index")
 
     url = get_object_or_404(ShortUrl, slug=slug)
+    if not url.enabled:
+        context = {
+            "short_url": url,
+        }
+        return render(request, "shortener/short_disabled.html", context)
+
     return redirect(url.url)
 
 

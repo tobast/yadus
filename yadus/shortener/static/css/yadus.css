@@ -82,3 +82,22 @@ label {
     color: white;
     font-size: 1.2em;
 }
+
+.suspected_spam {
+    background-color: #640d16;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    border: 1px solid #b12533;
+    padding: 10px 5px;
+    border-radius: 7px;
+}
+
+.nospamemail {
+    unicode-bidi: bidi-override;
+    direction: rtl;
+}
+
+.emph_color {
+    color: #ffb3b4;
+}

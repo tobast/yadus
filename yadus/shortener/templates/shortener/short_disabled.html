@@ -1,0 +1,30 @@
+{% extends 'shortener/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Disabled URL" %}</h2>
+
+{% if short_url.is_spam %}
+<p class="suspected_spam">
+{% blocktrans %}
+Beware! This URL is suspected to be either a
+<a href="https://en.wikipedia.org/wiki/Phishing">phishing attempt</a> or a
+<a href="https://en.wikipedia.org/wiki/Spamming">spam</a>.
+{% endblocktrans %}
+</p>
+{% endif %}
+
+<p>
+{% blocktrans %}
+You are trying to access a shortened URL that has been disabled by the administrators.
+{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}
+If you believe this URL was blocked abusively, you can report so to
+<span class="emph_color nospamemail">rf.tsabot@tcatnoc</span> (do not copy/paste!).
+{% endblocktrans %}
+</p>
+
+{% endblock %}

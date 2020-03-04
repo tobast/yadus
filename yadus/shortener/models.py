@@ -14,6 +14,13 @@ class ShortUrl(models.Model):
     slug = models.SlugField(allow_unicode=False)
     url = models.URLField(max_length=settings.MAX_URL_LENGTH)
 
+    is_spam = models.BooleanField(
+        default=False, help_text="Is this link considered spam and disabled?"
+    )
+    enabled = models.BooleanField(
+        default=True, help_text="Is this shortened link disabled?"
+    )
+
     def __str__(self):
         return "{} → {}".format(self.slug, self.url)
 
