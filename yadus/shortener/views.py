@@ -59,7 +59,7 @@ def submit(request):
         return HttpResponseForbidden("Slug already in use")
 
     try:
-        dbEntry = ShortUrl.create(url=url, slug=slug)
+        dbEntry = ShortUrl.create(url=url, slug=slug, request=request)
     except ValidationError as err:
         if "url" in dict(err):
             if human:

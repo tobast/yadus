@@ -7,6 +7,56 @@ from django.conf import settings
 from django.utils import timezone
 import string
 import random
+import urllib
+import re
+
+
+class BlacklistedDomain(models.Model):
+    """ List of blacklisted models """
+
+    domain = models.CharField(max_length=512)
+    is_spam = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "{}{}".format(self.domain, " (SPAM)" if self.is_spam else "")
+
+
+class UserAgent(models.Model):
+    """ User agents encountered in the wild """
+
+    user_agent = models.TextField(unique=True)
+
+    @staticmethod
+    def normalize(user_agent):
+        return user_agent.strip().lower()
+
+    def save(self, *args, **kwargs):
+        self.user_agent = self.normalize(self.user_agent)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.user_agent
+
+
+class ShortUrlMetadata(models.Model):
+    """ Metadata around a shortened URL that may be collected """
+
+    short_url = models.OneToOneField(
+        "ShortUrl", on_delete=models.CASCADE, related_name="metadata"
+    )
+
+    user_agent = models.ForeignKey(UserAgent, on_delete=models.CASCADE)
+
+    @classmethod
+    def create(cls, for_url, request):
+        user_agent, _ = UserAgent.objects.get_or_create(
+            user_agent=UserAgent.normalize(request.META["HTTP_USER_AGENT"])
+        )
+        meta = cls(short_url=for_url, user_agent=user_agent)
+        meta.save()
+
+    def __str__(self):
+        return "Metadata for {}".format(self.short_url.slug)
 
 
 class ShortUrl(models.Model):
@@ -15,6 +65,8 @@ class ShortUrl(models.Model):
     slug = models.SlugField(allow_unicode=False)
     url = models.URLField(max_length=settings.MAX_URL_LENGTH)
 
+    date = models.DateTimeField()
+
     is_spam = models.BooleanField(
         default=False, help_text="Is this link considered spam and disabled?"
     )
@@ -22,17 +74,61 @@ class ShortUrl(models.Model):
         default=True, help_text="Is this shortened link disabled?"
     )
 
+    # An entry is considered spam if at least one of the following group of REs
+    # matches for all its REs (ie. OR(AND(re.fullmatch)))
+    spam_slug_re = [
+        [re.compile(r"[a-zA-Z0-9_-]+[0-9]{3,7}"), re.compile(r".*[a-zA-Z].*")],
+    ]
+
     def __str__(self):
         return "{} → {}".format(self.slug, self.url)
+
+    def clean(self):
+        """ Validation """
+        super().clean()
+        self.spam_check()
+
+    def spam_check(self):
+        """ Checks the ShortUrl for spam and update flags """
+        is_blocked = not self.enabled
+        is_spam = self.is_spam
+
+        # Blacklisted domains check
+        parsed_url = urllib.parse.urlparse(self.url)
+        cur_domain = parsed_url.netloc.lower()
+        for blacklisted in BlacklistedDomain.objects.all():
+            if blacklisted.domain in cur_domain:
+                is_blocked = True
+                is_spam = is_spam or blacklisted.is_spam
+
+                if is_spam:
+                    break
+
+        # Slug pattern check
+        for re_group in self.spam_slug_re:
+            matching = True
+            for cur_re in re_group:
+                if not cur_re.fullmatch(self.slug):
+                    matching = False
+                    break
+            if matching:
+                is_blocked = True
+                is_spam = True
+                break
+
+        self.enabled = not is_blocked
+        self.is_spam = is_spam
 
     @staticmethod
     def slugExists(slug):
         return ShortUrl.objects.filter(slug=slug).exists()
 
     @staticmethod
-    def create(url, slug=None):
+    def create(url, slug=None, request=None):
         """ Adds a ShortUrl entry in the database and returns it. If `slug` is
-        `None` (default), picks a random slug. """
+        `None` (default), picks a random slug.
+        If the request is passed and the object is identified as spam, some metadata
+        will be saved. """
 
         def randomSlug():
             """ Generates a random unused slug """
@@ -50,42 +146,11 @@ class ShortUrl(models.Model):
 
         if not slug:
             slug = randomSlug()
-        entry = ShortUrl(url=url, slug=slug)
+        entry = ShortUrl(url=url, slug=slug, date=timezone.now())
         entry.full_clean()
         entry.save()
+
+        if entry.is_spam and request:
+            ShortUrlMetadata.create(entry, request)
+
         return entry
-
-
-class UserAgent(models.Model):
-    """ User agents encountered in the wild """
-
-    user_agent = models.TextField()
-
-    @staticmethod
-    def normalize(user_agent):
-        return user_agent.strip().lower()
-
-    def save(self, *args, **kwargs):
-        self.user_agent = self.normalize(self.user_agent)
-        super().save(*args, **kwargs)
-
-
-class ShortUrlMetadata(models.Model):
-    """ Metadata around a shortened URL that may be collected """
-
-    short_url = models.OneToOneField(
-        ShortUrl, on_delete=models.CASCADE, related_name="metadata"
-    )
-
-    date = models.DateTimeField()
-    user_agent = models.ForeignKey(UserAgent, on_delete=models.CASCADE)
-
-    @classmethod
-    def create(cls, for_url, request, date=None):
-        if date is None:
-            date = timezone.now()
-        user_agent = UserAgent.objects.get_or_create(
-            user_agent=request.META["HTTP_USER_AGENT"]
-        )
-        meta = cls(short_url=for_url, date=date, user_agent=user_agent)
-        meta.save()
