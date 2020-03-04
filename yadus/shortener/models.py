@@ -116,8 +116,11 @@ class ShortUrl(models.Model):
                 is_spam = True
                 break
 
+        changed = (self.enabled == is_blocked) or (self.is_spam != is_spam)
         self.enabled = not is_blocked
         self.is_spam = is_spam
+
+        return changed
 
     @staticmethod
     def slugExists(slug):
