@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ValidationError
 from .models import ShortUrl
 import logging
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,12 @@ def submit(request):
         if human:
             return redirect("index")
         return HttpResponseBadRequest('Missing POST field: "url"')
+
+    timestamp = int(request.POST.get("timestamp", 0))
+    if abs(timestamp - datetime.datetime.now().timestamp()) > 1800:
+        if human:
+            return redirect("index")
+        return HttpResponseBadRequest('Missing or bad POST field: "timestamp"')
 
     slug = request.POST.get("slug")
 

@@ -31,9 +31,21 @@
            placeholder="{%trans "Custom shortened text (opt.)" %}">
   </div>
   <input type="hidden" name="human" value="">
+  <input type="hidden" name="timestamp" id="timestamp_field" value="">
   <input type="submit"
          class="button"
          value="{% trans "Shorten me!" %}"
          id="input-submit">
 </form>
+
+<script>
+  var domReady = function(callback) {
+    document.readyState === "interactive" || document.readyState === "complete" ?
+    callback() : document.addEventListener("DOMContentLoaded", callback);
+  };
+  domReady(function () {
+    document.querySelector('#timestamp_field')
+      .setAttribute('value', Math.floor(Date.now() / 1000));
+  });
+</script>
 {% endblock %}
