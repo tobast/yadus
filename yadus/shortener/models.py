@@ -73,6 +73,9 @@ class ShortUrl(models.Model):
     enabled = models.BooleanField(
         default=True, help_text="Is this shortened link disabled?"
     )
+    human_created = models.BooleanField(
+        null=True, default=False, help_text="Was created by a human"
+    )
 
     # An entry is considered spam if at least one of the following group of REs
     # matches for all its REs (ie. OR(AND(re.fullmatch)))
@@ -128,11 +131,11 @@ class ShortUrl(models.Model):
         return ShortUrl.objects.filter(slug=slug).exists()
 
     @staticmethod
-    def create(url, slug=None, request=None):
-        """ Adds a ShortUrl entry in the database and returns it. If `slug` is
+    def create(url, slug=None, human=None, request=None):
+        """Adds a ShortUrl entry in the database and returns it. If `slug` is
         `None` (default), picks a random slug.
         If the request is passed and the object is identified as spam, some metadata
-        will be saved. """
+        will be saved."""
 
         def randomSlug():
             """ Generates a random unused slug """
@@ -150,7 +153,7 @@ class ShortUrl(models.Model):
 
         if not slug:
             slug = randomSlug()
-        entry = ShortUrl(url=url, slug=slug, date=timezone.now())
+        entry = ShortUrl(url=url, slug=slug, date=timezone.now(), human_created=human)
         entry.full_clean()
         entry.save()
 
