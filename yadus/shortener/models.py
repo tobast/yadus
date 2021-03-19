@@ -83,6 +83,10 @@ class ShortUrl(models.Model):
         [re.compile(r"[a-zA-Z0-9_-]+[0-9]{3,7}"), re.compile(r".*[a-zA-Z].*")],
     ]
 
+    spam_url_re = [
+        [re.compile(r"https?://w*\.appsr.*"), re.compile(r".*\.com/\?[a-zA-Z1-9]*")],
+    ]
+
     def __str__(self):
         return "{} → {}".format(self.slug, self.url)
 
@@ -95,6 +99,17 @@ class ShortUrl(models.Model):
         """ Checks the ShortUrl for spam and update flags """
         is_blocked = not self.enabled
         is_spam = self.is_spam
+
+        def matches_patternlist(value, patternlist):
+            for re_group in patternlist:
+                matching = True
+                for cur_re in re_group:
+                    if not cur_re.fullmatch(value):
+                        matching = False
+                        break
+                if matching:
+                    return True
+            return False
 
         # Blacklisted domains check
         parsed_url = urllib.parse.urlparse(self.url)
@@ -109,16 +124,12 @@ class ShortUrl(models.Model):
 
         # Slug pattern check
         if len(self.slug) != settings.SLUG_LENGTH:
-            for re_group in self.spam_slug_re:
-                matching = True
-                for cur_re in re_group:
-                    if not cur_re.fullmatch(self.slug):
-                        matching = False
-                        break
-                if matching:
-                    is_blocked = True
-                    is_spam = True
-                    break
+            if matches_patternlist(self.slug, self.spam_slug_re):
+                is_blocked = True
+                is_spam = True
+        if matches_patternlist(self.url, self.spam_url_re):
+            is_blocked = True
+            is_spam = True
 
         changed = (self.enabled == is_blocked) or (self.is_spam != is_spam)
         self.enabled = not is_blocked
