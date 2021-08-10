@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseBadRequest
@@ -43,6 +44,8 @@ def index(request, created_slug=None, err=None, status=200):
 @csrf_exempt
 def submit(request):
     """ Inserts the request in database """
+    if not settings.ALLOW_NEW_SHORTENED:
+        return HttpResponseForbidden("New shortened URLs are not currently allowed.")
     human = request.POST.get("human") is not None
 
     try:

@@ -65,6 +65,20 @@ label {
     background-color: #ffb3b4;
 }
 
+.outofservice {
+    margin-top: 30px;
+    border: 2px solid #b12533;
+    border-radius: 20px;
+    padding: 25px;
+    background-color: #e4a1a1;
+    color: black;
+    text-align: justify;
+}
+
+.outofservice>h2 {
+    color: #7b1923;
+}
+
 #info {
     float: right;
     font-size: 0.7em;

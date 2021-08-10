@@ -32,11 +32,34 @@
   </div>
   <input type="hidden" name="human" value="">
   <input type="hidden" name="timestamp" id="timestamp_field" value="">
+  {% if ALLOW_NEW_SHORTENED %}
   <input type="submit"
          class="button"
          value="{% trans "Shorten me!" %}"
          id="input-submit">
+  {% else %}
+  <input type="button"
+         class="button"
+         disabled=""
+         value="{% trans "Out of service…" %}"
+         id="input-submit">
+  {% endif %}
 </form>
+
+{% if not ALLOW_NEW_SHORTENED %}
+<div class="outofservice">
+  <h2>Sorry! This service is not available for now…</h2>
+  <p>Due to a wave of spammers, this service has been closed for now. Old links will
+  continue to work, but new links are not accepted. I will (probably) work soon(ish) on
+  making the service available again.</p>
+
+  <p>If you were actually using the service for
+  non-spam purposes and are sad about the situation, please contact me! (If you're not
+  a spammer, you should be able to find a way pretty quickly.)
+  </p>
+</div>
+{% endif %}
+
 
 <script>
   var domReady = function(callback) {
