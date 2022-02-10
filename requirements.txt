@@ -1,6 +1,6 @@
 appdirs==1.4.3
 asgiref==3.2.3
-Django==2.2.21
+Django==2.2.27
 packaging==16.8
 pyparsing==2.2.0
 pytz==2017.2
